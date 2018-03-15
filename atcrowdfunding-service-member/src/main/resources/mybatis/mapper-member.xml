@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.zht.atcrowdfunding.service.member.dao.MemberDao" >
+
+	<select id="queryMemberCertsByMemberid" resultType="com.zht.atcrowdfunding.common.bean.MemberCert">
+		select a.*, b.name as certname 
+		from t_member_cert a
+		join t_cert b on a.certid = b.id
+		where memberid = #{memberid}
+	</select>
+
+	<select id="queryMemberByPiid" resultType="com.zht.atcrowdfunding.common.bean.Member">
+		select * from t_member
+		where id = (
+			select memberid from t_ticket
+			where piid = #{piid}
+		)
+	</select>
+
+	<select id="queryCertsByAccoutType" resultType="com.zht.atcrowdfunding.common.bean.Cert">
+		select * from t_cert
+		where id in (
+			select certid
+			from t_account_type_cert
+			where accttype = #{accttype}
+		)
+	</select>
+
+	<!-- 插入流程审批单 -->
+	<insert id="insertTicket">
+		insert into t_ticket(
+			memberid, status, pstep, piid
+		) values(
+			#{memberid}, #{status}, #{pstep}, #{piid}
+		)
+	</insert>
+	
+	<insert id="insertMemberCerts">
+		insert into t_member_cert(
+			memberid, certid, iconpath
+		) values
+		<foreach collection="mcs" item="mc" separator=",">
+			(#{mc.memberid}, #{mc.certid}, #{mc.iconpath})
+		</foreach>
+	</insert>
+	
+	<update id="updateAccoutType">
+		update t_member
+		set accttype = #{accttype}
+		where id = #{id}
+	</update>
+	
+	<update id="updateStep">
+		update t_ticket
+		set pstep = #{pstep}
+		where id = #{id}
+	</update>
+	
+	<update id="updateAuthcodeAndStep">
+		update t_ticket
+		set pstep = #{pstep}, authcode = #{authcode}
+		where id = #{id}
+	</update>
+	
+	<update id="updateBasicinfo">
+		update t_member
+		set realname = #{realname},
+			cardnum = #{cardnum},
+			tel = #{tel}
+		where id = #{id}
+	</update>
+
+</mapper>
